@@ -37,6 +37,10 @@ blocks:
             - sudo rm -f /var/lib/apt/lists/lock
             - sudo rm -f /var/cache/apt/archives/lock
             - sudo rm -f /var/lib/dpkg/lock*
+            - sudo apt-get update
+            - sudo apt-get install -y curl gnupg
+            - 'curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg'
+            - 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list'
             - sudo apt-get clean
             - sudo apt-get update -y
             - sudo apt-get install -y python3-dev
