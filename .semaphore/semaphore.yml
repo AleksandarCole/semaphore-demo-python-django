@@ -1,17 +1,17 @@
 version: v1.0
-name: ''
+name: "\U0001F40D Python CI Pipeline"
 agent:
   machine:
-    type: ''
+    type: s1-kubernetes
     os_image: ''
-containers:
-  - name: main
-    image: 'registry.semaphoreci.com/python:3.8-node-browsers'
-  - name: mysql
-    image: 'registry.semaphoreci.com/mysql:8.0'
-    env_vars:
-      - name: MYSQL_ROOT_PASSWORD
-        value: root
+  containers:
+    - name: main
+      image: 'registry.semaphoreci.com/python:3.8-node-browsers'
+    - name: mysql
+      image: 'registry.semaphoreci.com/mysql:8.0'
+      env_vars:
+        - name: MYSQL_ROOT_PASSWORD
+          value: root
 fail_fast:
   stop:
     when: branch != 'master'
