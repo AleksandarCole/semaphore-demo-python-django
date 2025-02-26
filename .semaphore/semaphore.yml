@@ -7,6 +7,7 @@ agent:
   containers:
     - name: main
       image: 'registry.semaphoreci.com/python:3.8-node-browsers'
+      user: root
     - name: mysql
       image: 'registry.semaphoreci.com/mysql:8.0'
       env_vars:
