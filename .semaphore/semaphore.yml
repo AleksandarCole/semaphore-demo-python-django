@@ -34,8 +34,13 @@ blocks:
       jobs:
         - name: "\U0001F4E6 Install Python Dependencies"
           commands:
-            - apt-get update && apt-get install -y python3-dev
-            - apt-get install -y default-libmysqlclient-dev
+            - sudo rm -f /var/lib/apt/lists/lock
+            - sudo rm -f /var/cache/apt/archives/lock
+            - sudo rm -f /var/lib/dpkg/lock*
+            - sudo apt-get clean
+            - sudo apt-get update -y
+            - sudo apt-get install -y python3-dev
+            - sudo apt-get install -y default-libmysqlclient-dev
             - pip download --cache-dir .pip_cache -r requirements.txt
             - pip install pylint pylint-django
             - cache store
