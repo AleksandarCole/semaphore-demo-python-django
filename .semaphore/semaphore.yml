@@ -11,14 +11,12 @@ agent:
     - name: mysql
       image: 'mysql:8.0'
       env_vars:
-        - name: DB_HOST
-          value: mysql
-        - name: DB_USER
+        - name: MYSQL_ROOT_PASSWORD
           value: root
-        - name: DB_PASSWORD
-          value: root
-        - name: DB_NAME
+        - name: MYSQL_DATABASE
           value: pydjango
+        - name: MYSQL_ROOT_HOST
+          value: '%'
 fail_fast:
   stop:
     when: branch != 'master'
@@ -33,6 +31,15 @@ global_job_config:
       - checkout
       - pip install -r requirements.txt --cache-dir .pip_cache
       - cache restore
+  env_vars:
+    - name: DB_HOST
+      value: mysql
+    - name: DB_USER
+      value: root
+    - name: DB_PASSWORD
+      value: root
+    - name: DB_NAME
+      value: pydjango
 blocks:
   - name: "\U0001F6E0️ Install Dependencies"
     dependencies: []
@@ -47,6 +54,7 @@ blocks:
             - apt-get update -y
             - apt-get install -y python3-dev
             - apt-get install -y default-libmysqlclient-dev
+            - apt-get install -y default-mysql-client
             - pip download --cache-dir .pip_cache -r requirements.txt
             - pip install pylint pylint-django
             - cache store
@@ -62,6 +70,27 @@ blocks:
     dependencies:
       - "\U0001F6E0️ Install Dependencies"
     task:
+      prologue:
+        commands:
+          - apt-get update
+          - apt-get install -y default-mysql-client
+          - |
+            # Wait for MySQL to be ready
+            echo "Waiting for MySQL to be ready..."
+            max_attempts=30
+            counter=0
+            while ! mysql --host=mysql -uroot -proot -e "SELECT 1" >/dev/null 2>&1
+            do
+              counter=$((counter+1))
+              if [ $counter -gt $max_attempts ]; then
+                echo "MySQL failed to start in time"
+                exit 1
+              fi
+              echo "MySQL not ready yet. Waiting..."
+              sleep 2
+            done
+            echo "MySQL is ready!"
+          - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
       jobs:
         - name: "\U0001F50E Test Models"
           commands:
@@ -69,23 +98,36 @@ blocks:
         - name: "\U0001F50E Test Views"
           commands:
             - python manage.py test tasks.tests.test_views
-      prologue:
-        commands:
-          - apt-get update
-          - apt-get install -y default-mysql-client
-          - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
   - name: "\U0001F310 Run Browser Tests"
     dependencies:
       - "\U0001F9EA Run Unit Tests"
     task:
-      env_vars:
-        - name: DB_NAME
-          value: pydjango
+      prologue:
+        commands:
+          - apt-get update
+          - apt-get install -y default-mysql-client
+          - |
+            # Wait for MySQL to be ready
+            echo "Waiting for MySQL to be ready..."
+            max_attempts=30
+            counter=0
+            while ! mysql --host=mysql -uroot -proot -e "SELECT 1" >/dev/null 2>&1
+            do
+              counter=$((counter+1))
+              if [ $counter -gt $max_attempts ]; then
+                echo "MySQL failed to start in time"
+                exit 1
+              fi
+              echo "MySQL not ready yet. Waiting..."
+              sleep 2
+            done
+            echo "MySQL is ready!"
       jobs:
         - name: "\U0001F3AD Browser Tests"
           commands:
-            - mysql --host=mysql -uroot -proot -e "create database $DB_NAME"
+            - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS $DB_NAME"
             - 'nohup python manage.py runserver 0.0.0.0:8000 &'
+            - sleep 5
             - python manage.py test tasks.tests.test_browser
   - name: "\U0001F510 Run Security Tests"
     dependencies: []
