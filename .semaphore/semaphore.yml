@@ -70,27 +70,6 @@ blocks:
     dependencies:
       - "\U0001F6E0️ Install Dependencies"
     task:
-      prologue:
-        commands:
-          - apt-get update
-          - apt-get install -y default-mysql-client
-          - |
-            # Wait for MySQL to be ready
-            echo "Waiting for MySQL to be ready..."
-            max_attempts=30
-            counter=0
-            while ! mysql --host=mysql -uroot -proot -e "SELECT 1" >/dev/null 2>&1
-            do
-              counter=$((counter+1))
-              if [ $counter -gt $max_attempts ]; then
-                echo "MySQL failed to start in time"
-                exit 1
-              fi
-              echo "MySQL not ready yet. Waiting..."
-              sleep 2
-            done
-            echo "MySQL is ready!"
-          - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
       jobs:
         - name: "\U0001F50E Test Models"
           commands:
