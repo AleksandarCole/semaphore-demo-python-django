@@ -11,8 +11,14 @@ agent:
     - name: mysql
       image: 'mysql:8.0'
       env_vars:
-        - name: MYSQL_ROOT_PASSWORD
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
           value: root
+        - name: DB_PASSWORD
+          value: root
+        - name: DB_NAME
+          value: pydjango
 fail_fast:
   stop:
     when: branch != 'master'
@@ -59,9 +65,11 @@ blocks:
       jobs:
         - name: "\U0001F50E Test Models"
           commands:
+            - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
             - python manage.py test tasks.tests.test_models
         - name: "\U0001F50E Test Views"
           commands:
+            - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
             - python manage.py test tasks.tests.test_views
   - name: "\U0001F310 Run Browser Tests"
     dependencies:
