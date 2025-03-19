@@ -65,14 +65,15 @@ blocks:
       jobs:
         - name: "\U0001F50E Test Models"
           commands:
-            - apt-get install -y default-mysql-client
-            - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
             - python manage.py test tasks.tests.test_models
         - name: "\U0001F50E Test Views"
           commands:
-            - apt-get install -y default-mysql-client
-            - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
             - python manage.py test tasks.tests.test_views
+      prologue:
+        commands:
+          - apt-get update
+          - apt-get install -y default-mysql-client
+          - mysql --host=mysql -uroot -proot -e "create database IF NOT EXISTS pydjango"
   - name: "\U0001F310 Run Browser Tests"
     dependencies:
       - "\U0001F9EA Run Unit Tests"
